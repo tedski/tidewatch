@@ -1,0 +1,9 @@
+[project]
+name = "tidewatch-data-pipeline"
+version = "0.1.0"
+description = "NOAA tide data fetcher and database builder"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31.0",
+    "urllib3>=2.1.0",
+]

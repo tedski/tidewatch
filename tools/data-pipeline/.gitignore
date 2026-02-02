@@ -1,0 +1,13 @@
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# uv
+.uv/
+uv.lock
+
+# Data pipeline outputs
+stations.json
+tides.db

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(chmod:*)",
+      "Bash(./run.sh:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(gradle wrapper:*)",
+      "Bash(sqlite3:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
