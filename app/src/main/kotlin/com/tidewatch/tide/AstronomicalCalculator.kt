@@ -67,20 +67,20 @@ object AstronomicalCalculator {
             "OO1" -> 1.009 + 0.187 * cos(astronomicalArgs.N) - 0.015 * cos(2.0 * astronomicalArgs.N)
 
             // Shallow water constituents (compound)
-            "M4" -> pow(1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)), 2.0)
+            "M4" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))).pow(2.0)
             "MS4" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))) * 1.0
-            "M6" -> pow(1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)), 3.0)
-            "M8" -> pow(1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)), 4.0)
+            "M6" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))).pow(3.0)
+            "M8" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))).pow(4.0)
             "MK3" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))) *
                      (1.006 + 0.115 * cos(astronomicalArgs.N) - 0.009 * cos(2.0 * astronomicalArgs.N))
             "S4", "S6" -> 1.0 // Solar
             "MN4" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))) *
                      (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)))
             "2SM2" -> 1.0
-            "2MK3" -> pow(1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)), 2.0) *
+            "2MK3" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))).pow(2.0) *
                       (1.006 + 0.115 * cos(astronomicalArgs.N) - 0.009 * cos(2.0 * astronomicalArgs.N))
             "MSf" -> 1.0
-            "MO3" -> pow(1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi)), 2.0)
+            "MO3" -> (1.0 - 0.037 * cos(2.0 * (astronomicalArgs.N - astronomicalArgs.xi))).pow(2.0)
             "S1" -> 1.0 // Solar
 
             else -> 1.0 // Default for unknown constituents

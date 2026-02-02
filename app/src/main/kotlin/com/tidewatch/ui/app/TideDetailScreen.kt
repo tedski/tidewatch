@@ -181,7 +181,7 @@ private fun DetailContent(
                     if (state.station.isSubordinate() && state.station.referenceStationId != null) {
                         MetadataRow(
                             label = "Reference",
-                            value = state.station.referenceStationId!!
+                            value = state.station.referenceStationId
                         )
                     }
                 }

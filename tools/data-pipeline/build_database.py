@@ -29,7 +29,7 @@ def create_schema(conn: sqlite3.Connection):
     # Stations table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS stations (
-            id TEXT PRIMARY KEY,
+            id TEXT NOT NULL PRIMARY KEY,
             name TEXT NOT NULL,
             state TEXT NOT NULL,
             latitude REAL NOT NULL,
@@ -52,16 +52,10 @@ def create_schema(conn: sqlite3.Connection):
         )
     """)
 
-    # Create index for faster queries
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_constituents_station
-        ON harmonic_constituents(stationId)
-    """)
-
     # Subordinate offsets table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS subordinate_offsets (
-            stationId TEXT PRIMARY KEY,
+            stationId TEXT NOT NULL PRIMARY KEY,
             referenceStationId TEXT NOT NULL,
             timeOffsetHigh INTEGER NOT NULL,
             timeOffsetLow INTEGER NOT NULL,

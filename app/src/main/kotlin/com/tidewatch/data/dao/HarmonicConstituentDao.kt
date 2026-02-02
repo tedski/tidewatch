@@ -41,4 +41,10 @@ interface HarmonicConstituentDao {
      */
     @Query("SELECT DISTINCT constituentName FROM harmonic_constituents ORDER BY constituentName")
     suspend fun getAllConstituentNames(): List<String>
+
+    /**
+     * Get all harmonic constituents for all stations.
+     */
+    @Query("SELECT * FROM harmonic_constituents")
+    suspend fun getAllConstituents(): List<HarmonicConstituent>
 }

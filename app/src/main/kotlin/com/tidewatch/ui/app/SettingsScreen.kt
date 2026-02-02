@@ -23,7 +23,7 @@ import com.tidewatch.TideViewModel
 @Composable
 fun SettingsScreen(
     viewModel: TideViewModel,
-    onNavigateBack: () -> Unit
+    @Suppress("UNUSED_PARAMETER") onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val useMetric by viewModel.useMetric.collectAsState()
@@ -60,8 +60,9 @@ fun SettingsScreen(
                     )
                 },
                 toggleControl = {
-                    ToggleChipToggleControl(
-                        checked = useMetric
+                    Switch(
+                        checked = useMetric,
+                        enabled = true
                     )
                 },
                 colors = ToggleChipDefaults.toggleChipColors(),
