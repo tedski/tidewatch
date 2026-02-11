@@ -94,7 +94,7 @@ fun TideWatchApp(
 
     SwipeDismissableNavHost(
         navController = navController,
-        startDestination = Routes.MAIN
+        startDestination = Routes.STATION_PICKER
     ) {
         composable(Routes.MAIN) {
             TideMainScreen(
@@ -116,7 +116,10 @@ fun TideWatchApp(
             StationPickerScreen(
                 viewModel = viewModel,
                 onStationSelected = {
-                    navController.popBackStack()
+                    navController.navigate(Routes.MAIN) {
+                        // Clear back stack so user can't swipe back to picker
+                        popUpTo(Routes.STATION_PICKER) { inclusive = true }
+                    }
                 }
             )
         }

@@ -45,9 +45,20 @@ fun TideGraph(
 
         if (heightRange == 0.0) return@Canvas // Avoid division by zero
 
-        // Calculate points
-        val points = tideData.mapIndexed { index, tide ->
-            val x = (index.toFloat() / (tideData.size - 1)) * width
+        // Find time range for proper x-axis scaling
+        val startTime = tideData.first().time.epochSecond
+        val endTime = tideData.last().time.epochSecond
+        val timeRange = (endTime - startTime).toDouble()
+
+        if (timeRange == 0.0) return@Canvas // Avoid division by zero
+
+        // Calculate points using time-based x-positioning
+        val points = tideData.map { tide ->
+            // Calculate x position based on time (not index)
+            val timeOffset = (tide.time.epochSecond - startTime).toDouble()
+            val x = ((timeOffset / timeRange) * width).toFloat()
+
+            // Calculate y position based on height
             val normalizedHeight = ((tide.height - minHeight) / heightRange).toFloat()
             val y = height - (normalizedHeight * height) // Invert y-axis
 
