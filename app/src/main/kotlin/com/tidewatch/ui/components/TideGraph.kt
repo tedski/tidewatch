@@ -63,7 +63,7 @@ fun TideGraph(
         }
 
         // Calculate points using time-based x-positioning
-        val points = tideData.map { tide ->
+        val points = tideData.mapIndexed { index, tide ->
             // Calculate x position based on time (not index)
             val timeOffset = (tide.time.epochSecond - startTime).toDouble()
             val x = ((timeOffset / timeRange) * width).toFloat()
@@ -72,35 +72,18 @@ fun TideGraph(
             val normalizedHeight = ((tide.height - minHeight) / heightRange).toFloat()
             val y = height - (normalizedHeight * height) // Invert y-axis
 
+            // Log all points to find the issue
+            Log.d("TideGraph", "Point $index: x=$x, y=$y, time=${tide.time.epochSecond}, height=${tide.height}")
+
             Offset(x, y)
         }
 
-        // Draw tide curve with smooth cubic Bezier interpolation
+        // Draw tide curve with simple lines for debugging
         if (points.size >= 2) {
             val path = Path().apply {
                 moveTo(points[0].x, points[0].y)
-
-                // Use cubic Bezier curves for smooth tidal curve
-                for (i in 0 until points.size - 1) {
-                    val current = points[i]
-                    val next = points[i + 1]
-
-                    // Calculate control points for smooth cubic curve
-                    // Use 1/3 distance for tension control
-                    val tension = 0.3f
-                    val deltaX = next.x - current.x
-
-                    val control1X = current.x + deltaX * tension
-                    val control1Y = current.y
-
-                    val control2X = next.x - deltaX * tension
-                    val control2Y = next.y
-
-                    cubicTo(
-                        control1X, control1Y,
-                        control2X, control2Y,
-                        next.x, next.y
-                    )
+                for (i in 1 until points.size) {
+                    lineTo(points[i].x, points[i].y)
                 }
             }
 
