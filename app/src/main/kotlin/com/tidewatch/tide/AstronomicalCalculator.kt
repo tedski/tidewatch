@@ -124,12 +124,12 @@ object AstronomicalCalculator {
                      doodson[5] * args.p1
 
         if (debugTime && constituent.name == "M2") {
-            android.util.Log.d("AstroCalc", "vPlusU (unnormalized): $vPlusU")
+            android.util.Log.d("AstroCalc", "vPlusU before normalize: $vPlusU")
+            android.util.Log.d("AstroCalc", "vPlusU after normalize: ${normalizeAngle(vPlusU)}")
         }
 
-        // Do NOT normalize - keep continuous to avoid midnight discontinuity
-        // The cos() function in the harmonic formula handles the periodicity
-        return vPlusU
+        // Normalize to 0-360 degrees
+        return normalizeAngle(vPlusU)
     }
 
     /**

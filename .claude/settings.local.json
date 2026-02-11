@@ -54,7 +54,9 @@
       "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb shell input tap 227 362)",
       "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb shell input keyevent KEYCODE_HOME)",
       "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb shell monkey -p com.tidewatch -c android.intent.category.LAUNCHER 1)",
-      "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb exec-out screencap -p)"
+      "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb exec-out screencap -p)",
+      "Bash(/Users/tedski/Library/Android/sdk/platform-tools/adb shell:*)",
+      "Bash(python3:*)"
     ]
   }
 }
