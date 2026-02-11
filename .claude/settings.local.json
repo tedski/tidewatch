@@ -7,7 +7,29 @@
       "Bash(./gradlew assembleDebug:*)",
       "Bash(gradle wrapper:*)",
       "Bash(sqlite3:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(java:*)",
+      "Bash(echo:*)",
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(brew install:*)",
+      "Bash(export JAVA_HOME=/opt/homebrew/opt/openjdk@17)",
+      "Bash(export PATH=$JAVA_HOME/bin:$PATH)",
+      "Bash(./gradlew test:*)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb devices -l)",
+      "Bash(export ANDROID_HOME=~/Library/Android/sdk)",
+      "Bash(export PATH=$ANDROID_HOME/platform-tools:$PATH)",
+      "Bash(./gradlew installDebug:*)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb shell am start -n com.tidewatch/.MainActivity)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb logcat -d)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb logcat -d -s AndroidRuntime:E TideWatch:* com.tidewatch:*)",
+      "Bash(adb shell:*)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb shell screencap -p /sdcard/tidewatch_screenshot.png)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb pull /sdcard/tidewatch_screenshot.png /tmp/tidewatch_screenshot.png)",
+      "Skill(keybindings-help)",
+      "Bash(find:*)",
+      "Bash(git -C /Users/tedski/src/tidewatch diff HEAD~1 -- app/src/main/kotlin/com/tidewatch/ui/app/TideMainScreen.kt)"
     ]
   }
 }

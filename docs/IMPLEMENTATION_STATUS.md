@@ -1,7 +1,7 @@
 # TideWatch Implementation Status
 
-**Last Updated**: 2026-02-02
-**Overall Progress**: 12/20 tasks completed (60%)
+**Last Updated**: 2026-02-11
+**Overall Progress**: 14/20 tasks completed (70%)
 
 ## Executive Summary
 
@@ -67,15 +67,16 @@ The TideWatch WearOS app has been successfully scaffolded with the core calculat
 - [x] **CONTRIBUTING.md** - Contribution guidelines
 - [x] **Data pipeline README** - Usage instructions
 
-### 🚧 Remaining (8/20 tasks)
+### 🚧 Remaining (6/20 tasks)
 
 #### UI Screens (High Priority)
-- [ ] **Main tide display screen** - Primary app interface
+- [x] **Main tide display screen** - Primary app interface ✅ COMPLETED
   - Current tide height (large display)
   - Direction indicator with rate
   - Next high/low times
   - Mini 24-hour graph
   - Station name header
+  - Ambient mode support with 15-minute refresh
 
 - [ ] **Station picker screen** - Station selection
   - Location-based search
@@ -95,11 +96,12 @@ The TideWatch WearOS app has been successfully scaffolded with the core calculat
   - About section
 
 #### App Infrastructure (High Priority)
-- [ ] **Main app entry point** - MainActivity, navigation
+- [x] **Main app entry point** - MainActivity, navigation ✅ COMPLETED
   - Database initialization (copy from assets)
   - Permission handling (location)
   - ViewModel setup
   - Navigation graph
+  - Ambient mode lifecycle integration
 
 #### Features (Medium Priority)
 - [ ] **Tile widget** - WearOS tile implementation
@@ -107,10 +109,12 @@ The TideWatch WearOS app has been successfully scaffolded with the core calculat
   - 5-minute updates
   - Tap to launch app
 
-- [ ] **AOD optimization** - Always-On Display support
-  - Simplified rendering
-  - 15-minute update frequency
-  - High contrast colors
+- [x] **AOD optimization** - Always-On Display support ✅ COMPLETED
+  - Simplified rendering (disabled interactions)
+  - 15-minute update frequency (vs 1-minute active)
+  - High contrast colors via theme switching
+  - Settings button hidden in ambient mode
+  - 93% reduction in refresh frequency
 
 #### Testing & CI/CD (Medium Priority)
 - [ ] **Unit tests** - Calculation validation
@@ -149,7 +153,7 @@ tidewatch/
 │   │   │   └── TideCache.kt ✅
 │   │   ├── ui/
 │   │   │   ├── app/
-│   │   │   │   ├── TideMainScreen.kt ❌
+│   │   │   │   ├── TideMainScreen.kt ✅
 │   │   │   │   ├── StationPickerScreen.kt ❌
 │   │   │   │   ├── TideDetailScreen.kt ❌
 │   │   │   │   └── SettingsScreen.kt ❌
@@ -164,8 +168,8 @@ tidewatch/
 │   │   │       ├── Color.kt ✅
 │   │   │       ├── Type.kt ✅
 │   │   │       └── Theme.kt ✅
-│   │   ├── MainActivity.kt ❌
-│   │   └── TideWatchApp.kt ❌
+│   │   ├── MainActivity.kt ✅
+│   │   └── TideWatchApp.kt ✅
 │   ├── src/test/kotlin/com/tidewatch/
 │   │   └── tide/
 │   │       └── HarmonicCalculatorTest.kt ❌
@@ -185,21 +189,21 @@ tidewatch/
 ├── LICENSE ✅
 └── CONTRIBUTING.md ✅
 
-✅ = Implemented (21 Kotlin files, 2 Python files, 8 config/docs)
-❌ = Not yet implemented (8 files remaining)
+✅ = Implemented (23 Kotlin files, 2 Python files, 8 config/docs)
+❌ = Not yet implemented (6 files remaining)
 ```
 
 ## Statistics
 
-- **Total Files Created**: 31
-  - Kotlin: 21 files
+- **Total Files Created**: 33
+  - Kotlin: 23 files
   - Python: 2 files
   - Configuration: 8 files (Gradle, XML, Markdown)
 
 - **Lines of Code** (estimated):
-  - Kotlin: ~2,500 lines
+  - Kotlin: ~2,650 lines
   - Python: ~400 lines
-  - Total: ~2,900 lines
+  - Total: ~3,050 lines
 
 - **Test Coverage**: 0% (tests not yet written)
 
@@ -207,14 +211,15 @@ tidewatch/
 
 ### Immediate (Complete MVP)
 
-1. **Implement MainActivity and TideWatchApp**
+1. ✅ **Implement MainActivity and TideWatchApp** - COMPLETED
    - App initialization
    - Database copy from assets
    - ViewModel setup
    - Navigation configuration
+   - Ambient mode integration
 
 2. **Build main screens**
-   - TideMainScreen (highest priority)
+   - ✅ TideMainScreen (highest priority) - COMPLETED
    - StationPickerScreen
    - Detail and settings screens
 
@@ -238,9 +243,10 @@ tidewatch/
    - Verify calculations against NOAA
    - UI/UX refinement
 
-7. **AOD optimization**
+7. ✅ **AOD optimization** - COMPLETED
    - Ambient mode detection
    - Simplified rendering
+   - 15-minute refresh in ambient mode
 
 ### Medium-term (Production)
 
