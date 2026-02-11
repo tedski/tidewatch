@@ -124,12 +124,12 @@ object AstronomicalCalculator {
                      doodson[5] * args.p1
 
         if (debugTime && constituent.name == "M2") {
-            android.util.Log.d("AstroCalc", "vPlusU before normalize: $vPlusU")
-            android.util.Log.d("AstroCalc", "vPlusU after normalize: ${normalizeAngle(vPlusU)}")
+            android.util.Log.d("AstroCalc", "vPlusU (unnormalized): $vPlusU")
         }
 
-        // Normalize to 0-360 degrees
-        return normalizeAngle(vPlusU)
+        // Do NOT normalize - keep continuous to avoid midnight discontinuity
+        // The cos() function in the harmonic formula handles the periodicity
+        return vPlusU
     }
 
     /**
@@ -161,10 +161,10 @@ object AstronomicalCalculator {
         val T = daysSinceJ2000 / 36525.0 // Julian centuries
 
         // Mean lunar time (hour angle) - degrees
-        // CRITICAL: Use continuous hours since J2000, do NOT wrap/normalize here
-        // to avoid midnight discontinuity. Only normalize the final equilibrium argument.
-        val totalHoursSinceJ2000 = daysSinceJ2000 * 24.0
-        val tau = 15.0 * totalHoursSinceJ2000
+        // Standard approach: 15° per hour of Universal Time
+        val tau = 15.0 * (time.atZone(ZoneOffset.UTC).hour +
+                         time.atZone(ZoneOffset.UTC).minute / 60.0 +
+                         time.atZone(ZoneOffset.UTC).second / 3600.0)
 
         // Mean longitude of moon - degrees
         val s = 218.3164477 + 481267.88123421 * T -
