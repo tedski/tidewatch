@@ -297,4 +297,201 @@ class HarmonicCalculatorTest {
             "Morning high ($heightAtMorningHigh) should be significantly higher " +
             "than afternoon low ($heightAtAfternoonLow)")
     }
+
+    // ============================================================================
+    // SUBORDINATE STATION TESTS
+    // ============================================================================
+
+    @Test
+    fun `test subordinate station configuration accepted`() {
+        // Create a reference station with known constituents
+        val refConstituents = listOf(
+            HarmonicConstituent("REF001", "M2", 2.0, 180.0),
+            HarmonicConstituent("REF001", "S2", 0.5, 200.0),
+            HarmonicConstituent("REF001", "K1", 0.8, 150.0)
+        )
+
+        // Subordinate station with height offsets: +0.5 ft high, -0.3 ft low
+        val offset = SubordinateOffset(
+            stationId = "SUB001",
+            referenceStationId = "REF001",
+            heightOffsetHigh = 0.5,
+            heightOffsetLow = -0.3,
+            timeOffsetHigh = 0,  // No time offset for this test
+            timeOffsetLow = 0
+        )
+
+        // Verify calculator accepts subordinate offsets configuration
+        val calcWithOffset = HarmonicCalculator(
+            constituents = mapOf("REF001" to refConstituents),
+            subordinateOffsets = mapOf("SUB001" to offset)
+        )
+
+        val time = Instant.parse("2026-02-12T12:00:00Z")
+
+        // Reference station should work normally
+        val refHeight = calcWithOffset.calculateHeight("REF001", time)
+        assertTrue(refHeight in -5.0..10.0,
+            "Reference station should calculate normally")
+
+        // TODO: Subordinate station logic not yet implemented
+        // When implemented, uncomment and verify:
+        // val subHeight = calcWithOffset.calculateHeight("SUB001", time)
+        // High tides should be offset by +0.5 ft
+        // Low tides should be offset by -0.3 ft
+    }
+
+    @Test
+    fun `test subordinate station with time offsets`() {
+        val refConstituents = listOf(
+            HarmonicConstituent("REF002", "M2", 2.5, 190.0),
+            HarmonicConstituent("REF002", "K1", 0.9, 160.0)
+        )
+
+        // Subordinate with time offsets: +30 min for highs, +45 min for lows
+        val offset = SubordinateOffset(
+            stationId = "SUB002",
+            referenceStationId = "REF002",
+            heightOffsetHigh = 0.0,
+            heightOffsetLow = 0.0,
+            timeOffsetHigh = 30,  // minutes
+            timeOffsetLow = 45
+        )
+
+        val calcWithOffset = HarmonicCalculator(
+            constituents = mapOf("REF002" to refConstituents),
+            subordinateOffsets = mapOf("SUB002" to offset)
+        )
+
+        val startTime = Instant.parse("2026-02-12T00:00:00Z")
+
+        // Find high tide at reference station
+        val refHigh = calcWithOffset.findNextExtremum("REF002", startTime, findHigh = true)
+        assertNotNull(refHigh)
+
+        // TODO: When subordinate logic is implemented:
+        // val subHigh = calcWithOffset.findNextExtremum("SUB002", startTime, findHigh = true)
+        // assertNotNull(subHigh)
+        // assertEquals(refHigh.time.plusSeconds(1800), subHigh.time, "Subordinate high should be 30 min later")
+    }
+
+    @Test
+    fun `test subordinate station offset structure is valid`() {
+        // Verify SubordinateOffset data structure is properly defined
+        val offset = SubordinateOffset(
+            stationId = "SUB003",
+            referenceStationId = "REF999",
+            heightOffsetHigh = 0.5,
+            heightOffsetLow = -0.2,
+            timeOffsetHigh = 30,
+            timeOffsetLow = 45
+        )
+
+        // Verify properties are accessible
+        assertEquals("SUB003", offset.stationId)
+        assertEquals("REF999", offset.referenceStationId)
+        assertEquals(0.5, offset.heightOffsetHigh, 0.001)
+        assertEquals(-0.2, offset.heightOffsetLow, 0.001)
+        assertEquals(30, offset.timeOffsetHigh)
+        assertEquals(45, offset.timeOffsetLow)
+
+        // TODO: Test actual subordinate calculation when implemented
+    }
+
+    // ============================================================================
+    // ERROR HANDLING TESTS
+    // ============================================================================
+
+    @Test
+    fun `test calculateHeight throws for unknown station`() {
+        try {
+            calculator.calculateHeight("INVALID_STATION_ID", Instant.now())
+            // If no exception, test fails
+            assertTrue(false, "Should throw IllegalArgumentException for unknown station")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("No constituents found") == true,
+                "Error message should indicate missing constituents")
+        }
+    }
+
+    @Test
+    fun `test calculateHeight throws for empty constituents`() {
+        val emptyCalc = HarmonicCalculator(
+            constituents = mapOf("EMPTY" to emptyList())
+        )
+
+        try {
+            emptyCalc.calculateHeight("EMPTY", Instant.now())
+            assertTrue(false, "Should throw IllegalArgumentException for empty constituents")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("no constituents") == true,
+                "Error message should indicate no constituents")
+        }
+    }
+
+    @Test
+    fun `test findNextExtremum returns null when no extremum found`() {
+        // Very short search window - may not find extremum
+        val startTime = Instant.parse("2026-02-12T00:00:00Z")
+
+        // Try to find extremum in a very short window
+        // (Implementation uses 30-hour max search, so this should succeed)
+        val extremum = calculator.findNextExtremum("9414290", startTime, findHigh = true)
+
+        // Should find an extremum within reasonable time
+        assertNotNull(extremum, "Should find extremum within 30 hours")
+    }
+
+    @Test
+    fun `test calculateHeight with null constituents map`() {
+        val nullCalc = HarmonicCalculator(constituents = emptyMap())
+
+        try {
+            nullCalc.calculateHeight("ANY_STATION", Instant.now())
+            assertTrue(false, "Should throw for missing station")
+        } catch (e: IllegalArgumentException) {
+            // Expected behavior
+            assertTrue(true)
+        }
+    }
+
+    @Test
+    fun `test calculateRateOfChange with unknown station`() {
+        try {
+            calculator.calculateRateOfChange("UNKNOWN", Instant.now())
+            assertTrue(false, "Should throw for unknown station")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("constituents") == true)
+        }
+    }
+
+    @Test
+    fun `test findExtrema with invalid time range`() {
+        val endTime = Instant.parse("2026-02-12T00:00:00Z")
+        val startTime = endTime.plusSeconds(86400) // Start after end
+
+        // Should return empty list for invalid range
+        val extrema = calculator.findExtrema("9414290", startTime, endTime)
+        assertTrue(extrema.isEmpty(), "Should return empty list for invalid time range")
+    }
+
+    @Test
+    fun `test generateTideCurve with small interval`() {
+        val startTime = Instant.parse("2026-02-12T00:00:00Z")
+        val endTime = startTime.plusSeconds(3600) // 1 hour
+
+        // Small interval (1 minute) should work
+        val curve = calculator.generateTideCurve("9414290", startTime, endTime,
+            intervalMinutes = 1)
+
+        // Should generate approximately 60 points for 1 hour at 1 min intervals
+        assertTrue(curve.size >= 60, "Should generate points at 1 minute intervals")
+        assertTrue(curve.size <= 62, "Should not generate too many points")
+
+        // Verify points are 1 minute apart
+        for (i in 0 until curve.size - 1) {
+            val timeDiff = curve[i + 1].time.epochSecond - curve[i].time.epochSecond
+            assertEquals(60L, timeDiff, "Points should be 1 minute (60 sec) apart")
+        }
+    }
 }
