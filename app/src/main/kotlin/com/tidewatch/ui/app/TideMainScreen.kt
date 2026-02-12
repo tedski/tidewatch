@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.material.*
@@ -168,8 +169,8 @@ private fun SuccessScreen(
         contentPadding = PaddingValues(
             top = 32.dp,
             bottom = 32.dp,
-            start = 10.dp,
-            end = 10.dp
+            start = 16.dp,
+            end = 16.dp
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -180,6 +181,8 @@ private fun SuccessScreen(
                 text = state.station.name,
                 style = MaterialTheme.typography.title3,
                 textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(
@@ -189,7 +192,7 @@ private fun SuccessScreen(
                             Modifier
                         }
                     )
-                    .padding(vertical = 8.dp)
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
             )
         }
 
@@ -246,7 +249,7 @@ private fun SuccessScreen(
                             Modifier
                         }
                     )
-                    .padding(vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
                     text = "24 Hour Forecast",
