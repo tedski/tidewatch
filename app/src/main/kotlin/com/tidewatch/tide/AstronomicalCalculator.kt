@@ -105,15 +105,6 @@ object AstronomicalCalculator {
         val args = getAstronomicalArguments(time)
         val doodson = constituent.doodsonNumbers
 
-        // Debug logging for specific discontinuity times
-        val debugTime = time.epochSecond in 1770853800L..1770855400L
-        if (debugTime && constituent.name == "M2") {
-            android.util.Log.d("AstroCalc", "=== M2 Equilibrium Arg for time=${time.epochSecond} ===")
-            android.util.Log.d("AstroCalc", "T=${args.T}, s=${args.s}, h=${args.h}")
-            android.util.Log.d("AstroCalc", "p=${args.p}, N=${args.N}, p1=${args.p1}")
-            android.util.Log.d("AstroCalc", "Doodson: ${doodson.joinToString()}")
-        }
-
         // Calculate V + u using Doodson numbers
         // Formula: V + u = τ*T + s*s + h*h + p*p + N'*N + p'*p'
         val vPlusU = doodson[0] * args.T +
@@ -122,11 +113,6 @@ object AstronomicalCalculator {
                      doodson[3] * args.p +
                      doodson[4] * args.N +
                      doodson[5] * args.p1
-
-        if (debugTime && constituent.name == "M2") {
-            android.util.Log.d("AstroCalc", "vPlusU before normalize: $vPlusU")
-            android.util.Log.d("AstroCalc", "vPlusU after normalize: ${normalizeAngle(vPlusU)}")
-        }
 
         // Normalize to 0-360 degrees
         return normalizeAngle(vPlusU)

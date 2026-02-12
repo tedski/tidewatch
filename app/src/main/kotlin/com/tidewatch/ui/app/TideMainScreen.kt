@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.material.*
 import com.tidewatch.TideViewModel
@@ -154,10 +157,14 @@ private fun SuccessScreen(
     // - Ambient mode: 15 minutes (900,000 ms) for battery optimization
     val refreshInterval = if (isAmbient) 900_000L else 60_000L
 
-    LaunchedEffect(isAmbient) {
-        while (true) {
-            delay(refreshInterval)
-            onRefresh()
+    // Lifecycle-aware auto-refresh - only refreshes when app is in foreground
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(isAmbient, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                delay(refreshInterval)
+                onRefresh()
+            }
         }
     }
 

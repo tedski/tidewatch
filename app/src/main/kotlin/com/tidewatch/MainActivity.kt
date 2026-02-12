@@ -15,8 +15,6 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.tidewatch.data.PreferencesRepository
 import com.tidewatch.data.StationRepository
-import com.tidewatch.tide.HarmonicCalculator
-import com.tidewatch.tide.TideCache
 import com.tidewatch.ui.app.SettingsScreen
 import com.tidewatch.ui.app.StationPickerScreen
 import com.tidewatch.ui.app.TideDetailScreen
@@ -38,8 +36,7 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
         val app = application as TideWatchApplication
         TideViewModelFactory(
             repository = app.repository,
-            calculator = app.calculator,
-            cache = app.cache,
+            application = app,
             preferencesRepository = app.preferencesRepository
         )
     }
@@ -153,14 +150,13 @@ object Routes {
  */
 class TideViewModelFactory(
     private val repository: StationRepository,
-    private val calculator: HarmonicCalculator,
-    private val cache: TideCache,
+    private val application: TideWatchApplication,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TideViewModel::class.java)) {
-            return TideViewModel(repository, calculator, cache, preferencesRepository) as T
+            return TideViewModel(repository, application, preferencesRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

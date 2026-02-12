@@ -3,7 +3,9 @@ package com.tidewatch.data
 import com.tidewatch.data.models.HarmonicConstituent
 import com.tidewatch.data.models.Station
 import com.tidewatch.data.models.SubordinateOffset
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import kotlin.math.*
 
 /**
@@ -66,6 +68,7 @@ class StationRepository(
      * Find nearest stations to a location.
      *
      * Uses great-circle distance (haversine formula).
+     * Distance calculations are CPU-intensive and run on Default dispatcher.
      *
      * @param latitude User latitude
      * @param longitude User longitude
@@ -78,7 +81,7 @@ class StationRepository(
         longitude: Double,
         radiusMiles: Double = 100.0,
         limit: Int = 10
-    ): List<StationWithDistance> {
+    ): List<StationWithDistance> = withContext(Dispatchers.Default) {
         // Calculate bounding box for initial query
         val latDelta = radiusMiles / 69.0 // Approximately 69 miles per degree latitude
         val lonDelta = radiusMiles / abs(cos(Math.toRadians(latitude)) * 69.0)
@@ -99,8 +102,8 @@ class StationRepository(
             limit = limit * 2 // Get more than needed for accurate sorting
         )
 
-        // Calculate great-circle distances and sort
-        return stations
+        // Calculate great-circle distances and sort (CPU-intensive)
+        stations
             .map { station ->
                 StationWithDistance(
                     station = station,

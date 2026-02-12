@@ -49,10 +49,16 @@ class HarmonicCalculator(
     }
 
     /**
-     * Cache of V0 (equilibrium argument at reference epoch) for each constituent.
-     * Calculated once per constituent and reused to avoid midnight discontinuities.
+     * Pre-computed V0 (equilibrium argument at reference epoch) for each constituent.
+     * Calculated once in constructor and reused to avoid midnight discontinuities.
+     * Immutable and thread-safe.
      */
-    private val v0Cache = mutableMapOf<String, Double>()
+    private val v0Cache: Map<String, Double> = Constituents.ALL.associate { constituent ->
+        constituent.name to AstronomicalCalculator.calculateEquilibriumArgument(
+            constituent,
+            REFERENCE_EPOCH
+        )
+    }
 
     /**
      * Calculate the tide height at a specific time for a station.
@@ -73,17 +79,6 @@ class HarmonicCalculator(
         // Calculate hours since reference epoch
         val hoursSinceEpoch = Duration.between(REFERENCE_EPOCH, time).seconds / 3600.0
 
-        // Debug logging for specific discontinuity times
-        // Points 19 and 20 from logs: 1770854114 (23:55) and 1770854714 (00:05)
-        val debugTime = time.epochSecond in 1770853800L..1770855400L
-        if (debugTime) {
-            val formatter = java.time.format.DateTimeFormatter.ISO_INSTANT
-            android.util.Log.d("HarmonicCalc", "=== Calculating height for time=$time (${time.epochSecond}) ===")
-            android.util.Log.d("HarmonicCalc", "ISO Time: ${formatter.format(time)}")
-            android.util.Log.d("HarmonicCalc", "Hours since epoch (1983-01-01): $hoursSinceEpoch")
-            android.util.Log.d("HarmonicCalc", "Constituent count: ${stationConstituents.size}")
-        }
-
         // Sum all constituent contributions
         var height = 0.0
 
@@ -91,10 +86,10 @@ class HarmonicCalculator(
             val constituentDef = Constituents.getConstituent(constituent.constituentName)
                 ?: continue // Skip unknown constituents
 
-            // Get or calculate V0 (equilibrium argument at reference epoch) - calculated once and cached
-            val v0 = v0Cache.getOrPut(constituent.constituentName) {
-                AstronomicalCalculator.calculateEquilibriumArgument(constituentDef, REFERENCE_EPOCH)
-            }
+            // Get pre-computed V0 (equilibrium argument at reference epoch) from immutable cache
+            // This should never be null since we pre-compute all constituents
+            val v0 = v0Cache[constituent.constituentName]
+                ?: error("V0 not found for constituent ${constituent.constituentName}")
 
             // Get nodal corrections for current time
             val nodeFactor = AstronomicalCalculator.calculateNodeFactor(constituentDef, time)
@@ -111,16 +106,7 @@ class HarmonicCalculator(
             val argument = toRadians(omega * hoursSinceEpoch + (v0 + nodalPhase) - phase)
             val contribution = amplitude * nodeFactor * cos(argument)
 
-            if (debugTime) {
-                android.util.Log.d("HarmonicCalc", "${constituent.constituentName}: amp=$amplitude, phase=$phase, " +
-                    "omega=$omega, nodeFactor=$nodeFactor, v0=$v0, u=$nodalPhase, argument=${Math.toDegrees(argument)}, contribution=$contribution")
-            }
-
             height += contribution
-        }
-
-        if (debugTime) {
-            android.util.Log.d("HarmonicCalc", "Total height: $height")
         }
 
         return height

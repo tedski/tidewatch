@@ -20,14 +20,12 @@ import java.time.temporal.ChronoUnit
  * Orchestrates repository, calculator, and cache to provide reactive UI state.
  *
  * @property repository Station repository for database access
- * @property calculator Harmonic calculator for tide predictions
- * @property cache Tide cache for extrema pre-computation
+ * @property application Application instance for async calculator/cache access
  * @property preferencesRepository Preferences repository for persisted settings
  */
 class TideViewModel(
     private val repository: StationRepository,
-    private val calculator: HarmonicCalculator,
-    private val cache: TideCache,
+    private val application: TideWatchApplication,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
@@ -105,6 +103,10 @@ class TideViewModel(
             val station = repository.getStation(stationId)
                 ?: throw IllegalArgumentException("Station not found: $stationId")
 
+            // Get calculator and cache (async initialization)
+            val calculator = application.getCalculator()
+            val cache = application.getCache()
+
             // Calculate current tide height
             val now = Instant.now()
             val currentHeight = calculator.calculateTideHeight(stationId, now)
@@ -149,6 +151,7 @@ class TideViewModel(
 
         viewModelScope.launch {
             try {
+                val calculator = application.getCalculator()
                 val stationId = currentState.station.id
                 val now = Instant.now()
                 val currentHeight = calculator.calculateTideHeight(stationId, now)
@@ -171,6 +174,7 @@ class TideViewModel(
                 preferencesRepository.setSelectedStationId(stationId)
 
                 // Pre-warm cache for this station
+                val cache = application.getCache()
                 cache.prewarm(stationId)
 
                 // Data will be loaded automatically via selectedStationId flow

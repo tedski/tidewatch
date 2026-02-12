@@ -1,6 +1,5 @@
 package com.tidewatch.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,27 +60,15 @@ fun TideGraph(
 
         if (timeRange == 0.0) return@Canvas // Avoid division by zero
 
-        // Debug logging
-        Log.d("TideGraph", "Data points: ${tideData.size}")
-        Log.d("TideGraph", "Height range: $minHeight to $maxHeight (range: $heightRange)")
-        Log.d("TideGraph", "Time range: $startTime to $endTime (range: $timeRange seconds)")
-        Log.d("TideGraph", "Canvas size: ${width}x${height}")
-        tideData.take(5).forEachIndexed { i, data ->
-            Log.d("TideGraph", "Point $i: time=${data.time.epochSecond}, height=${data.height}")
-        }
-
         // Calculate points using time-based x-positioning
-        val points = tideData.mapIndexed { index, tide ->
-            // Calculate x position based on time (not index)
+        val points = tideData.map { tide ->
+            // Calculate x position based on time
             val timeOffset = (tide.time.epochSecond - startTime).toDouble()
             val x = ((timeOffset / timeRange) * width).toFloat()
 
             // Calculate y position based on height (using graphHeight instead of height)
             val normalizedHeight = ((tide.height - minHeight) / heightRange).toFloat()
             val y = graphHeight - (normalizedHeight * graphHeight) // Invert y-axis
-
-            // Log all points to find the issue
-            Log.d("TideGraph", "Point $index: x=$x, y=$y, time=${tide.time.epochSecond}, height=${tide.height}")
 
             Offset(x, y)
         }
