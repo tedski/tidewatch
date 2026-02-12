@@ -35,7 +35,8 @@ import com.tidewatch.ui.components.StationList
 @Composable
 fun StationPickerScreen(
     viewModel: TideViewModel,
-    onStationSelected: () -> Unit
+    onStationSelected: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     var currentScreen by remember { mutableStateOf<PickerScreen>(PickerScreen.Start) }
 
@@ -45,7 +46,8 @@ fun StationPickerScreen(
         when (currentScreen) {
             is PickerScreen.Start -> StartScreen(
                 onNearbyClick = { currentScreen = PickerScreen.Nearby },
-                onBrowseClick = { currentScreen = PickerScreen.Browse }
+                onBrowseClick = { currentScreen = PickerScreen.Browse },
+                onSettingsClick = onNavigateToSettings
             )
             is PickerScreen.Nearby -> NearbyMode(
                 viewModel = viewModel,
@@ -76,7 +78,8 @@ private sealed class PickerScreen {
 @Composable
 private fun StartScreen(
     onNearbyClick: () -> Unit,
-    onBrowseClick: () -> Unit
+    onBrowseClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -102,6 +105,12 @@ private fun StartScreen(
             Chip(
                 onClick = onBrowseClick,
                 label = { Text("Browse All Stations") },
+                colors = ChipDefaults.secondaryChipColors(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Chip(
+                onClick = onSettingsClick,
+                label = { Text("Settings") },
                 colors = ChipDefaults.secondaryChipColors(),
                 modifier = Modifier.fillMaxWidth()
             )

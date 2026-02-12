@@ -42,8 +42,7 @@ fun TideMainScreen(
     viewModel: TideViewModel,
     isAmbient: Boolean = false,
     onNavigateToStationPicker: () -> Unit,
-    onNavigateToDetail: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToDetail: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val useMetric by viewModel.useMetric.collectAsState()
@@ -64,7 +63,6 @@ fun TideMainScreen(
                 isAmbient = isAmbient,
                 onStationClick = onNavigateToStationPicker,
                 onGraphClick = onNavigateToDetail,
-                onSettingsClick = onNavigateToSettings,
                 onRefresh = { viewModel.refreshCurrentHeight() }
             )
         }
@@ -149,7 +147,6 @@ private fun SuccessScreen(
     isAmbient: Boolean,
     onStationClick: () -> Unit,
     onGraphClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     onRefresh: () -> Unit
 ) {
     // Auto-refresh based on ambient mode:
@@ -261,18 +258,6 @@ private fun SuccessScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
-                )
-            }
-        }
-
-        // Settings button (hidden in ambient mode)
-        if (!isAmbient) {
-            item {
-                Chip(
-                    onClick = onSettingsClick,
-                    label = { Text("Settings") },
-                    colors = ChipDefaults.secondaryChipColors(),
-                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

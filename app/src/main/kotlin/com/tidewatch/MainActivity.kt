@@ -105,9 +105,6 @@ fun TideWatchApp(
                 },
                 onNavigateToDetail = {
                     navController.navigate(Routes.DETAIL)
-                },
-                onNavigateToSettings = {
-                    navController.navigate(Routes.SETTINGS)
                 }
             )
         }
@@ -117,6 +114,9 @@ fun TideWatchApp(
                 viewModel = viewModel,
                 onStationSelected = {
                     navController.navigate(Routes.MAIN)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Routes.SETTINGS)
                 }
             )
         }
