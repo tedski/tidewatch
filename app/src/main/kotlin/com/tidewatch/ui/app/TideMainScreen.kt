@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.wear.compose.foundation.lazy.AutoCenteringParams
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.*
 import com.tidewatch.TideViewModel
 import com.tidewatch.ui.components.ExtremumCard
@@ -169,19 +170,34 @@ private fun SuccessScreen(
         }
     }
 
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = 32.dp,
-            bottom = 32.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        autoCentering = AutoCenteringParams(itemIndex = 1) // Center on current tide height
+    // Scaling lazy list state for scroll tracking
+    val listState = rememberScalingLazyListState()
+
+    Scaffold(
+        timeText = {
+            // Standard WearOS TimeText component - curved on round screens,
+            // stays fixed at top while content scrolls underneath
+            TimeText()
+        },
+        positionIndicator = {
+            // Shows scroll position on the edge of the screen
+            PositionIndicator(scalingLazyListState = listState)
+        }
     ) {
-        // Station name (clickable in active mode only)
+        ScalingLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState,
+            contentPadding = PaddingValues(
+                top = 40.dp, // Extra padding for TimeText at top
+                bottom = 32.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            autoCentering = AutoCenteringParams(itemIndex = 1) // Center on current tide height
+        ) {
+            // Station name (clickable in active mode only)
         item {
             Text(
                 text = state.station.name,
@@ -274,6 +290,7 @@ private fun SuccessScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
         }
     }
 }
