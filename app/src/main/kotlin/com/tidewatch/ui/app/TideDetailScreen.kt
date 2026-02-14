@@ -10,10 +10,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
 import com.tidewatch.TideViewModel
 import com.tidewatch.data.models.TideExtremum
 import com.tidewatch.ui.components.ExtremumCard
@@ -75,16 +79,27 @@ private fun DetailContent(
         it.time.atZone(ZoneId.systemDefault()).toLocalDate()
     }
 
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = 32.dp,
-            bottom = 32.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    val listState = rememberScalingLazyListState()
+
+    Scaffold(
+        timeText = {
+            TimeText()
+        },
+        positionIndicator = {
+            PositionIndicator(scalingLazyListState = listState)
+        }
     ) {
+        ScalingLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState,
+            contentPadding = PaddingValues(
+                top = 40.dp,
+                bottom = 32.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
         // Title
         item {
             Text(
@@ -158,6 +173,7 @@ private fun DetailContent(
                     }
                 }
             }
+        }
         }
     }
 }
