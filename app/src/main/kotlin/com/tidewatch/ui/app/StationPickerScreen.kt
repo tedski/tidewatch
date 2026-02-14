@@ -39,32 +39,59 @@ fun StationPickerScreen(
     onStationSelected: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
-    var currentScreen by remember { mutableStateOf<PickerScreen>(PickerScreen.Start) }
+    // Restore saved picker state
+    val savedMode by viewModel.pickerMode.collectAsState()
+    val savedSelectedState by viewModel.pickerSelectedState.collectAsState()
+
+    var currentScreen by remember {
+        mutableStateOf<PickerScreen>(
+            when (savedMode) {
+                "nearby" -> PickerScreen.Nearby
+                "browse" -> PickerScreen.Browse
+                else -> PickerScreen.Start
+            }
+        )
+    }
 
     Scaffold(
         timeText = { TimeText() }
     ) {
         when (currentScreen) {
             is PickerScreen.Start -> StartScreen(
-                onNearbyClick = { currentScreen = PickerScreen.Nearby },
-                onBrowseClick = { currentScreen = PickerScreen.Browse },
+                onNearbyClick = {
+                    currentScreen = PickerScreen.Nearby
+                    viewModel.savePickerState("nearby", null)
+                },
+                onBrowseClick = {
+                    currentScreen = PickerScreen.Browse
+                    viewModel.savePickerState("browse", null)
+                },
                 onSettingsClick = onNavigateToSettings
             )
             is PickerScreen.Nearby -> NearbyMode(
                 viewModel = viewModel,
                 onStationSelected = { station ->
                     viewModel.selectStation(station.id)
+                    viewModel.savePickerState("nearby", null)
                     onStationSelected()
                 },
-                onBackClick = { currentScreen = PickerScreen.Start }
+                onBackClick = {
+                    currentScreen = PickerScreen.Start
+                    viewModel.clearPickerState()
+                }
             )
             is PickerScreen.Browse -> BrowseMode(
                 viewModel = viewModel,
+                initialSelectedState = savedSelectedState,
                 onStationSelected = { station ->
                     viewModel.selectStation(station.id)
+                    viewModel.savePickerState("browse", savedSelectedState)
                     onStationSelected()
                 },
-                onBackClick = { currentScreen = PickerScreen.Start }
+                onBackClick = {
+                    currentScreen = PickerScreen.Start
+                    viewModel.clearPickerState()
+                }
             )
         }
     }
@@ -244,12 +271,20 @@ private fun loadLocationAndStations(
 @Composable
 private fun BrowseMode(
     viewModel: TideViewModel,
+    initialSelectedState: String?,
     onStationSelected: (Station) -> Unit,
     onBackClick: () -> Unit
 ) {
     val allStates by viewModel.allStates.collectAsState()
     val browseStations by viewModel.browseStations.collectAsState()
-    var selectedState by remember { mutableStateOf<String?>(null) }
+    var selectedState by remember { mutableStateOf(initialSelectedState) }
+
+    // Load stations if returning to a previously selected state
+    LaunchedEffect(initialSelectedState) {
+        if (initialSelectedState != null) {
+            viewModel.loadStationsByState(initialSelectedState)
+        }
+    }
 
     if (selectedState == null) {
         // Handle back press to return to start screen
@@ -281,6 +316,7 @@ private fun BrowseMode(
                     onClick = {
                         selectedState = state
                         viewModel.loadStationsByState(state)
+                        viewModel.savePickerState("browse", state)
                     },
                     label = {
                         Text(
@@ -295,7 +331,10 @@ private fun BrowseMode(
         }
     } else {
         // Handle back press to return to state list
-        BackHandler(onBack = { selectedState = null })
+        BackHandler(onBack = {
+            selectedState = null
+            viewModel.savePickerState("browse", null)
+        })
 
         // Show stations for selected state
         if (browseStations.isEmpty()) {

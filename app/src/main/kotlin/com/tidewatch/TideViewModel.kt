@@ -70,6 +70,13 @@ class TideViewModel(
     private val _allStates = MutableStateFlow<List<String>>(emptyList())
     val allStates: StateFlow<List<String>> = _allStates.asStateFlow()
 
+    // Navigation state for station picker
+    private val _pickerMode = MutableStateFlow<String?>(null)
+    val pickerMode: StateFlow<String?> = _pickerMode.asStateFlow()
+
+    private val _pickerSelectedState = MutableStateFlow<String?>(null)
+    val pickerSelectedState: StateFlow<String?> = _pickerSelectedState.asStateFlow()
+
     init {
         // Load persisted state and tide data
         viewModelScope.launch {
@@ -228,5 +235,21 @@ class TideViewModel(
         viewModelScope.launch {
             preferencesRepository.setUseMetric(metric)
         }
+    }
+
+    /**
+     * Save picker navigation state for restoration after swipe-back.
+     */
+    fun savePickerState(mode: String?, selectedState: String?) {
+        _pickerMode.value = mode
+        _pickerSelectedState.value = selectedState
+    }
+
+    /**
+     * Clear picker navigation state.
+     */
+    fun clearPickerState() {
+        _pickerMode.value = null
+        _pickerSelectedState.value = null
     }
 }
