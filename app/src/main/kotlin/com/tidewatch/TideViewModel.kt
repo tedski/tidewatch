@@ -38,8 +38,7 @@ class TideViewModel(
         data class Success(
             val station: Station,
             val currentHeight: TideHeight,
-            val nextHigh: TideExtremum?,
-            val nextLow: TideExtremum?,
+            val nextExtrema: List<TideExtremum>,
             val curve24h: List<TideHeight>,
             val extrema7d: List<TideExtremum>
         ) : TideUiState()
@@ -118,9 +117,11 @@ class TideViewModel(
             val now = Instant.now()
             val currentHeight = calculator.calculateTideHeight(stationId, now)
 
-            // Get next high and low from cache
-            val nextHigh = cache.getNextHigh(stationId, now)
-            val nextLow = cache.getNextLow(stationId, now)
+            // Get next 2 extrema in chronological order from cache
+            val allExtrema = cache.getAllExtrema(stationId)
+            val nextExtrema = allExtrema
+                .filter { it.time.isAfter(now) }
+                .take(2)
 
             // Generate 24-hour curve
             val endTime24h = now.plus(24, ChronoUnit.HOURS)
@@ -137,8 +138,7 @@ class TideViewModel(
             _state.value = TideUiState.Success(
                 station = station,
                 currentHeight = currentHeight,
-                nextHigh = nextHigh,
-                nextLow = nextLow,
+                nextExtrema = nextExtrema,
                 curve24h = curve24h,
                 extrema7d = extrema7d
             )

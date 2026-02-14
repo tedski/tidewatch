@@ -237,22 +237,11 @@ private fun SuccessScreen(
             )
         }
 
-        // Next high tide
-        if (state.nextHigh != null) {
+        // Next 2 tides (in chronological order)
+        state.nextExtrema.forEach { extremum ->
             item {
                 ExtremumCard(
-                    extremum = state.nextHigh,
-                    modifier = Modifier.fillMaxWidth(),
-                    useMetric = useMetric
-                )
-            }
-        }
-
-        // Next low tide
-        if (state.nextLow != null) {
-            item {
-                ExtremumCard(
-                    extremum = state.nextLow,
+                    extremum = extremum,
                     modifier = Modifier.fillMaxWidth(),
                     useMetric = useMetric
                 )
