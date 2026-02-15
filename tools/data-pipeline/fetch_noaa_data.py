@@ -23,6 +23,7 @@ import requests
 STATIONS_API = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json"
 HARCON_API = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{station_id}/harcon.json"
 TIDEPREDOFFSETS_API = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{station_id}/tidepredoffsets.json"
+DATUMS_API = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{station_id}/datums.json"
 
 # API request settings
 REQUEST_TIMEOUT = 30  # seconds
@@ -235,6 +236,45 @@ def fetch_tide_pred_offsets(station_id: str, verbose: bool = False) -> Optional[
     return None
 
 
+def fetch_datums(station_id: str, verbose: bool = False) -> Optional[Dict[str, Any]]:
+    """
+    Fetch datum data for a station.
+
+    Args:
+        station_id: NOAA station ID
+        verbose: Enable detailed logging
+
+    Returns:
+        Dictionary with datum information, or None if not available
+    """
+    url = DATUMS_API.format(station_id=station_id)
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = requests.get(url, timeout=REQUEST_TIMEOUT)
+
+            if response.status_code == 404:
+                return None
+
+            response.raise_for_status()
+            data = response.json()
+
+            return data
+
+        except (requests.exceptions.RequestException, ValueError) as e:
+            if attempt < MAX_RETRIES - 1:
+                wait_time = 2 ** attempt
+                if verbose:
+                    print(f"  Retry {attempt + 1}/{MAX_RETRIES} after {wait_time}s (error: {e})")
+                time.sleep(wait_time)
+            else:
+                if verbose:
+                    print(f"  Warning: Could not fetch datums for {station_id}: {e}")
+                return None
+
+    return None
+
+
 def main():
     """Main execution function."""
     args = parse_arguments()
@@ -302,6 +342,23 @@ def main():
             station_data["type"] = "harmonic"
             if len(stations) < 100 or args.verbose:
                 print(f"  ✓ Found {len(harmonics.get('HarmonicConstituents', []))} constituents")
+
+            # Fetch datums for Z₀ calculation (MSL - MLLW)
+            time.sleep(REQUEST_DELAY)
+            datums_data = fetch_datums(station_id, args.verbose)
+            if datums_data:
+                datums_list = datums_data.get("datums") or []  # Handle None case
+                if datums_list:  # Only process if we have actual datum data
+                    msl_val = next((float(d["value"]) for d in datums_list if d["name"] == "MSL"), None)
+                    mllw_val = next((float(d["value"]) for d in datums_list if d["name"] == "MLLW"), None)
+                    if msl_val is not None and mllw_val is not None:
+                        station_data["datumOffset"] = msl_val - mllw_val
+                        if len(stations) < 100 or args.verbose:
+                            print(f"  ✓ Datum offset (Z₀): {station_data['datumOffset']:.2f} ft")
+                    elif len(stations) < 100 or args.verbose:
+                        print(f"  - Datum offset unavailable (missing MSL or MLLW)")
+                elif len(stations) < 100 or args.verbose:
+                    print(f"  - Datum offset unavailable (no datum data)")
         else:
             # No harmonics or empty - likely subordinate station
             station_data["type"] = "subordinate"

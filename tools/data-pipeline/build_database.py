@@ -142,7 +142,8 @@ def create_schema(conn: sqlite3.Connection):
             longitude REAL NOT NULL,
             type TEXT NOT NULL,
             timezoneOffset INTEGER NOT NULL,
-            referenceStationId TEXT
+            referenceStationId TEXT,
+            datumOffset REAL NOT NULL DEFAULT 0.0
         )
     """)
 
@@ -205,11 +206,14 @@ def insert_station(conn: sqlite3.Connection, station_data: Dict[str, Any]):
     # Reference station (for subordinate stations)
     reference_station_id = station_data.get("referenceStationId")
 
+    # Datum offset Z₀ (MSL - MLLW in feet)
+    datum_offset = station_data.get("datumOffset", 0.0)
+
     cursor.execute("""
         INSERT OR REPLACE INTO stations
-        (id, name, state, latitude, longitude, type, timezoneOffset, referenceStationId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (station_id, name, state, lat, lon, station_type, timezone_offset, reference_station_id))
+        (id, name, state, latitude, longitude, type, timezoneOffset, referenceStationId, datumOffset)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (station_id, name, state, lat, lon, station_type, timezone_offset, reference_station_id, datum_offset))
 
 
 def insert_harmonics(conn: sqlite3.Connection, station_id: str, harmonics: Dict[str, Any]):
@@ -228,7 +232,7 @@ def insert_harmonics(conn: sqlite3.Connection, station_id: str, harmonics: Dict[
     for constituent in constituents:
         name = constituent.get("name")
         amplitude = float(constituent.get("amplitude", 0.0))
-        phase = float(constituent.get("phase_GMT", 0.0))
+        phase = float(constituent.get("phase_GMT", 0.0))  # Use phase_GMT for UTC calculations
 
         cursor.execute("""
             INSERT OR REPLACE INTO harmonic_constituents

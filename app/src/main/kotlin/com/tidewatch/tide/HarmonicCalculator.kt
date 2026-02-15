@@ -9,24 +9,28 @@ import kotlin.math.*
  * Core harmonic analysis engine for tide prediction.
  *
  * Implements the standard harmonic method used by NOAA:
- * h(t) = datum + Σ[A_i × f_i × cos(ω_i × t + φ_i - κ_i)]
+ * h(t) = Z₀ + Σ[ f_i(t) × A_i × cos(ω_i × (t-t₀) + V₀_i + u_i(t) - κ_i) ]
  *
  * Where:
+ * - Z₀ = datum offset (MSL above MLLW in feet)
  * - A_i = constituent amplitude (from database)
- * - f_i = node factor (from astronomical calculation)
- * - ω_i = angular velocity (constituent speed)
- * - φ_i = local phase (from database)
- * - κ_i = equilibrium argument (from astronomical calculation)
+ * - f_i(t) = node factor at prediction time (from astronomical calculation)
+ * - ω_i = angular velocity (constituent speed in degrees/hour)
+ * - V₀_i = equilibrium argument V at reference epoch (from Doodson numbers)
+ * - u_i(t) = nodal phase correction at prediction time (Schureman formulas)
+ * - κ_i = phase_GMT from NOAA database
  *
  * Supports subordinate stations by transparently resolving to reference stations
  * and applying time/height offsets.
  *
  * @property constituents Map of station ID to list of harmonic constituents
  * @property subordinateOffsets Map of station ID to subordinate offset data
+ * @property datumOffsets Map of station ID to Z₀ datum offset (MSL above MLLW)
  */
 class HarmonicCalculator(
     private val constituents: Map<String, List<HarmonicConstituent>>,
-    subordinateOffsets: Map<String, SubordinateOffset> = emptyMap()
+    subordinateOffsets: Map<String, SubordinateOffset> = emptyMap(),
+    private val datumOffsets: Map<String, Double> = emptyMap()
 ) {
     /**
      * Helper for subordinate station calculations.
@@ -93,8 +97,8 @@ class HarmonicCalculator(
         // Calculate hours since reference epoch
         val hoursSinceEpoch = Duration.between(REFERENCE_EPOCH, time).seconds / 3600.0
 
-        // Sum all constituent contributions
-        var height = 0.0
+        // Start with datum offset Z₀ (MSL above MLLW)
+        var height = datumOffsets[effectiveStationId] ?: 0.0
 
         for (constituent in stationConstituents) {
             val constituentDef = Constituents.getConstituent(constituent.constituentName)
@@ -107,14 +111,12 @@ class HarmonicCalculator(
 
             // Get nodal corrections for current time
             val nodeFactor = AstronomicalCalculator.calculateNodeFactor(constituentDef, time)
-            // TODO: Implement proper nodal phase (u) calculation
-            // For now, u ≈ 0 is a reasonable approximation (small, slowly varying)
-            val nodalPhase = 0.0
+            val nodalPhase = AstronomicalCalculator.calculateNodalPhase(constituentDef, time)
 
-            // Calculate constituent contribution using pytides approach
-            // h = A × f × cos(ω × t + (V0 + u) - φ)
+            // NOAA prediction formula:
+            // h = f(t) × A × cos(ω × (t-t₀) + V₀ + u(t) - κ)
             val omega = constituentDef.speed // degrees per hour
-            val phase = constituent.phaseLocal // degrees
+            val phase = constituent.phaseLocal // phase_GMT (κ) in degrees
             val amplitude = constituent.amplitude // feet or meters
 
             val argument = toRadians(omega * hoursSinceEpoch + (v0 + nodalPhase) - phase)
@@ -187,8 +189,8 @@ class HarmonicCalculator(
         // Calculate hours since reference epoch
         val hoursSinceEpoch = Duration.between(REFERENCE_EPOCH, time).seconds / 3600.0
 
-        // Sum all constituent contributions
-        var height = 0.0
+        // Start with datum offset Z₀ (MSL above MLLW)
+        var height = datumOffsets[stationId] ?: 0.0
 
         for (constituent in stationConstituents) {
             val constituentDef = Constituents.getConstituent(constituent.constituentName)
@@ -198,10 +200,10 @@ class HarmonicCalculator(
                 ?: error("V0 not found for constituent ${constituent.constituentName}")
 
             val nodeFactor = AstronomicalCalculator.calculateNodeFactor(constituentDef, time)
-            val nodalPhase = 0.0
+            val nodalPhase = AstronomicalCalculator.calculateNodalPhase(constituentDef, time)
 
             val omega = constituentDef.speed
-            val phase = constituent.phaseLocal
+            val phase = constituent.phaseLocal // phase_GMT (κ)
             val amplitude = constituent.amplitude
 
             val argument = toRadians(omega * hoursSinceEpoch + (v0 + nodalPhase) - phase)

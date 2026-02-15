@@ -62,9 +62,14 @@ class TideWatchApplication : Application() {
             val allOffsets = database.subordinateOffsetDao().getAllOffsets()
             val offsetsByStation = allOffsets.associateBy { it.stationId }
 
+            // Load datum offsets from stations (Z₀ = MSL - MLLW)
+            val allStations = database.stationDao().getAllStations()
+            val datumOffsets = allStations.associate { it.id to it.datumOffset }
+
             HarmonicCalculator(
                 constituents = constituentsByStation,
-                subordinateOffsets = offsetsByStation
+                subordinateOffsets = offsetsByStation,
+                datumOffsets = datumOffsets
             )
         }
     }

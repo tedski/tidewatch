@@ -25,7 +25,8 @@ data class Station(
     val longitude: Double,
     val type: String, // "harmonic" or "subordinate"
     val timezoneOffset: Int, // UTC offset in minutes
-    val referenceStationId: String? = null // For subordinate stations
+    val referenceStationId: String? = null, // For subordinate stations
+    val datumOffset: Double = 0.0 // Z₀: height of MSL above MLLW in feet
 ) {
     companion object {
         const val TYPE_HARMONIC = "harmonic"

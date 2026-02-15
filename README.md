@@ -135,7 +135,7 @@ NOAA data is public domain. The NOAA logo and branding are not used in this app.
 
 - **NOAA Center for Operational Oceanographic Products and Services** for comprehensive tide data and APIs
 - **WearOS development community** for tools and guidance
-- **pytides project** for harmonic calculation reference implementation
+- **XTide** for harmonic calculation reference implementation
 
 ## References
 
