@@ -1,6 +1,7 @@
 package com.tidewatch
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
@@ -13,6 +14,8 @@ import androidx.wear.ambient.AmbientModeSupport
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.google.android.play.core.integrity.IntegrityManagerFactory
+import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.tidewatch.data.PreferencesRepository
 import com.tidewatch.data.StationRepository
 import com.tidewatch.ui.app.SettingsScreen
@@ -47,6 +50,9 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
         // Initialize ambient mode support
         ambientController = AmbientModeSupport.attach(this)
 
+        // Request Play Integrity token for app authentication
+        requestIntegrityToken()
+
         setContent {
             TideWatchTheme(isAmbient = isAmbient.value) {
                 TideWatchApp(
@@ -54,6 +60,44 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
                     isAmbient = isAmbient.value
                 )
             }
+        }
+    }
+
+    /**
+     * Request integrity token from Google Play to verify app authenticity.
+     * This runs asynchronously and logs results without blocking app startup.
+     */
+    private fun requestIntegrityToken() {
+        // Get Cloud Project Number from BuildConfig or use placeholder
+        // TODO: Set CLOUD_PROJECT_NUMBER in build.gradle.kts after configuring Google Cloud project
+        val cloudProjectNumber = CLOUD_PROJECT_NUMBER
+
+        if (cloudProjectNumber == 0L) {
+            Log.w(TAG, "Cloud Project Number not configured. Integrity checks disabled.")
+            return
+        }
+
+        try {
+            val integrityManager = IntegrityManagerFactory.create(this)
+            val integrityTokenRequest = IntegrityTokenRequest.builder()
+                .setCloudProjectNumber(cloudProjectNumber)
+                .build()
+
+            integrityManager.requestIntegrityToken(integrityTokenRequest)
+                .addOnSuccessListener { response ->
+                    val integrityToken = response.token()
+                    Log.d(TAG, "Integrity token obtained successfully")
+                    // Store or send token to backend for verification
+                    // In production, send this to your backend to verify with attestation key
+                }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Failed to obtain integrity token: ${exception.message}")
+                    // App continues normally even if integrity check fails
+                    // This allows offline usage on WearOS
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting integrity token", e)
+            // App continues normally
         }
     }
 
@@ -144,6 +188,15 @@ object Routes {
     const val DETAIL = "detail"
     const val SETTINGS = "settings"
 }
+
+/**
+ * Constants for MainActivity.
+ */
+private const val TAG = "MainActivity"
+
+// TODO: Replace with your Google Cloud Project Number from Google Cloud Console
+// Get it from: Google Cloud Console → Project settings → Project number
+private const val CLOUD_PROJECT_NUMBER = 0L
 
 /**
  * ViewModel factory for TideViewModel.
