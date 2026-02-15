@@ -116,6 +116,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
 
+    // Google Play Services
+    implementation("com.google.android.play:integrity:1.6.0")
+
     // Compose for WearOS
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
     implementation("androidx.compose.ui:ui")
