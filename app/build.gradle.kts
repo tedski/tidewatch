@@ -4,6 +4,34 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
+// Extract version from git tag (e.g., v1.2.3 -> versionName="1.2.3", versionCode=10203)
+fun getVersionNameFromTag(): String {
+    return try {
+        val tag = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .start()
+            .inputStream.bufferedReader().readText().trim()
+
+        // Remove 'v' prefix if present (v1.2.3 -> 1.2.3)
+        tag.removePrefix("v")
+    } catch (e: Exception) {
+        "0.1.0" // Fallback for local development
+    }
+}
+
+fun getVersionCodeFromTag(): Int {
+    val versionName = getVersionNameFromTag()
+    val parts = versionName.split(".")
+    if (parts.size == 3) {
+        val major = parts[0].toIntOrNull() ?: 0
+        val minor = parts[1].toIntOrNull() ?: 0
+        val patch = parts[2].toIntOrNull() ?: 0
+        // Calculate versionCode: 1.2.3 -> 10203 (major*10000 + minor*100 + patch)
+        return major * 10000 + minor * 100 + patch
+    }
+    return 1 // Fallback
+}
+
 android {
     namespace = "com.tidewatch"
     compileSdk = 34
@@ -12,10 +40,20 @@ android {
         applicationId = "com.tidewatch"
         minSdk = 30 // WearOS 3+
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = getVersionCodeFromTag()
+        versionName = getVersionNameFromTag()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Signing configuration for release builds
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "release.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
     }
 
     buildTypes {
@@ -26,6 +64,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
