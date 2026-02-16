@@ -33,19 +33,8 @@
             </intent-filter>
         </activity>
 
-        <!-- Tile Service -->
-        <service
-            android:name=".ui.tile.TideTileService"
-            android:exported="true"
-            android:label="@string/tile_label"
-            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
-            <intent-filter>
-                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
-            </intent-filter>
-            <meta-data
-                android:name="androidx.wear.tiles.PREVIEW"
-                android:resource="@drawable/tile_preview" />
-        </service>
+        <!-- TODO: Tile Service - to be implemented -->
+        <!-- See docs/ROADMAP.md -->
 
     </application>
 
